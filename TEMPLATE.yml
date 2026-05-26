@@ -1,0 +1,102 @@
+# Copy this file to requests/<stable-slug>.yml.
+# Keep everything public. Do not include secrets or private user data.
+
+request:
+  app_name: ""
+  slug: ""
+  requester:
+    name: ""
+    github: ""
+    contact: ""
+  # proposed | accepted | implementing | implemented | deployed | blocked
+  status: proposed
+  target_networks:
+    - tn10
+    - tn12
+  request_type:
+    # Pick one: new_decoder, decoder_update, explorer_display, api_projection
+    kind: new_decoder
+    priority: normal
+
+protocol:
+  family: ""
+  version: ""
+  description: ""
+  public_spec_url: ""
+  source_repo_url: ""
+  license: ""
+
+explorer_goal:
+  summary: ""
+  user_story: ""
+  needed_views:
+    - covenant_detail
+    - transaction_detail
+    - address_activity
+  needed_api_routes:
+    - /tx/{txid}
+    - /covenants/{covenant_id_or_script_hash}
+  display_fields:
+    - name: ""
+      description: ""
+      example: ""
+
+chain_evidence:
+  # Include at least one accepted txid or reproducible fixture.
+  txids:
+    - network: ""
+      txid: ""
+      expected_action: ""
+      explorer_url: ""
+  addresses:
+    - network: ""
+      address: ""
+      role: ""
+  outpoints:
+    - txid: ""
+      vout: 0
+      role: ""
+  covenant_ids:
+    - ""
+
+decode_contract:
+  # Describe how maintainers should recognize and classify this flow.
+  p2sh_reveal_shape: ""
+  template_or_protocol_marker: ""
+  actions:
+    - name: ""
+      trigger: ""
+      expected_indexer_action: ""
+      expected_decoded_args: {}
+  state_transitions:
+    - from: ""
+      to: ""
+      trigger: ""
+  balances_or_positions:
+    description: ""
+    owner_identifier: ""
+    amount_field: ""
+
+fixtures:
+  # Link fixtures or add them in this PR under fixtures/ if they are small.
+  included_in_pr: []
+  external_links: []
+  reproduction_steps:
+    - ""
+
+compatibility:
+  related_standards:
+    - ""
+  conflicts_or_overlap:
+    - ""
+  backwards_compatibility_notes: ""
+
+maintainer_notes:
+  open_questions:
+    - ""
+  requested_timeline: ""
+  implementation_owner: ""
+  implementation_pr: ""
+  deployment_status_url: ""
+  verified_live_links:
+    - ""
