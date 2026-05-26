@@ -1,0 +1,126 @@
+name: Validate Decoder Requests
+
+on:
+  pull_request:
+    paths:
+      - "requests/**/*.yml"
+      - "requests/**/*.yaml"
+      - "examples/**/*.yml"
+      - "examples/**/*.yaml"
+      - "TEMPLATE.yml"
+      - "scripts/validate_request.py"
+      - ".github/workflows/validate-requests.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "requests/**/*.yml"
+      - "requests/**/*.yaml"
+      - "examples/**/*.yml"
+      - "examples/**/*.yaml"
+      - "TEMPLATE.yml"
+      - "scripts/validate_request.py"
+      - ".github/workflows/validate-requests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate request YAML
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install validator dependency
+        run: python -m pip install --upgrade pyyaml
+
+      - name: Check YAML syntax
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+
+          paths = [Path("TEMPLATE.yml")]
+          paths.extend(sorted(Path("examples").rglob("*.yml")))
+          paths.extend(sorted(Path("examples").rglob("*.yaml")))
+          paths.extend(sorted(Path("requests").rglob("*.yml")) if Path("requests").exists() else [])
+          paths.extend(sorted(Path("requests").rglob("*.yaml")) if Path("requests").exists() else [])
+
+          for path in paths:
+              with path.open("r", encoding="utf-8") as handle:
+                  yaml.safe_load(handle)
+              print(f"YAML OK: {path}")
+          PY
+
+      - name: Validate example request
+        run: python scripts/validate_request.py examples/complete-request.yml
+
+      - name: Validate submitted requests
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          request_dir = Path("requests")
+          if not request_dir.exists():
+              print("No requests directory yet.")
+              raise SystemExit(0)
+
+          paths = sorted(request_dir.rglob("*.yml")) + sorted(request_dir.rglob("*.yaml"))
+          if not paths:
+              print("No submitted requests yet.")
+              raise SystemExit(0)
+
+          for path in paths:
+              subprocess.run(
+                  [sys.executable, "scripts/validate_request.py", str(path)],
+                  check=True,
+              )
+          PY
+
+      - name: Check request uniqueness
+        run: |
+          python - <<'PY'
+          from collections import defaultdict
+          from pathlib import Path
+          import sys
+          import yaml
+
+          request_dir = Path("requests")
+          if not request_dir.exists():
+              raise SystemExit(0)
+
+          paths = sorted(request_dir.rglob("*.yml")) + sorted(request_dir.rglob("*.yaml"))
+          slugs = defaultdict(list)
+          txids = defaultdict(list)
+
+          for path in paths:
+              with path.open("r", encoding="utf-8") as handle:
+                  data = yaml.safe_load(handle) or {}
+              slug = ((data.get("request") or {}).get("slug") or "").strip()
+              if slug:
+                  slugs[slug].append(str(path))
+              for item in ((data.get("chain_evidence") or {}).get("txids") or []):
+                  txid = (item.get("txid") or "").strip().lower() if isinstance(item, dict) else ""
+                  if txid:
+                      txids[txid].append(str(path))
+
+          errors = []
+          errors.extend(f"duplicate request.slug {slug}: {', '.join(paths)}" for slug, paths in slugs.items() if len(paths) > 1)
+          errors.extend(f"duplicate chain_evidence txid {txid}: {', '.join(paths)}" for txid, paths in txids.items() if len(paths) > 1)
+
+          if errors:
+              for error in errors:
+                  print(f"ERROR: {error}", file=sys.stderr)
+              raise SystemExit(1)
+          PY
