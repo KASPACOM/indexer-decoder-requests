@@ -117,6 +117,8 @@ maintainer_notes:
   open_questions:
     - ""
   requested_timeline: ""
+  # Filled by maintainers after acceptance. Code changes happen in the
+  # implementation repo, not in this public intake repo.
   implementation_owner: ""
   implementation_pr: ""
   deployment_status_url: ""

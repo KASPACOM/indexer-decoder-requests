@@ -48,21 +48,32 @@ ask for more evidence before assigning implementation.
 Maintainers review the request as the decoder contract. If it has enough public
 evidence and the behavior is valid, acceptance starts implementation work.
 
+This public repo is the intake and tracking layer. The actual code PR belongs
+in the relevant implementation repo, for example the indexer, API, explorer, or
+deployment/infra repo.
+
 Normal lifecycle:
 
 1. `proposed` - contributor opens a request PR.
 2. `accepted` - maintainers agree the indexer/explorer should support it.
-3. `implementing` - maintainer or coding agent is building decoder/API/explorer
-   support.
-4. `implemented` - code merged, but live deployment or reindex verification is
-   still pending.
+3. `implementing` - maintainer or coding agent is building support in the
+   implementation repo, with the implementation PR linked from this request.
+4. `implemented` - implementation repo PR merged, but live deployment or reindex
+   verification is still pending.
 5. `deployed` - public API/explorer verified against the request evidence.
 6. `blocked` - request needs more evidence, a chain tx, fixture, or design
    decision.
 
-Implementation can include decoder logic, persistence/projection changes, API
-fields or routes, explorer display changes, fixtures, tests, deployment, and
-live verification.
+The implementation repo work can include decoder logic, persistence/projection
+changes, API fields or routes, explorer display changes, fixtures, tests,
+deployment, reindexing, and live verification.
+
+This request repo should keep the public status updated with:
+
+- the assigned implementation owner,
+- the implementation PR link,
+- deployment or reindex status,
+- verified public API/explorer links.
 
 ## Acceptance vs Deployment
 

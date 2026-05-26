@@ -16,5 +16,11 @@ explorer link proves it. Use `request.status: proposed` for new contributor
 requests.
 
 Implementation agents use accepted request files as the contract for work in
-the private/public indexer implementation repos. A request is implementation
-ready only when it has enough evidence to write fixtures and verify live output.
+the relevant implementation repo, not this intake repo. Put decoder/API/explorer
+code, deploy changes, and reindex work in the implementation repo. Then update
+the request with `maintainer_notes.implementation_pr`,
+`maintainer_notes.deployment_status_url`, and
+`maintainer_notes.verified_live_links`.
+
+A request is implementation ready only when it has enough evidence to write
+fixtures and verify live output.
