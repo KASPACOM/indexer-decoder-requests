@@ -58,21 +58,21 @@ Normal lifecycle:
 2. `accepted` - maintainers agree the indexer/explorer should support it.
 3. `implementing` - maintainer or coding agent is building support in the
    implementation repo, with the implementation PR linked from this request.
-4. `implemented` - implementation repo PR merged, but live deployment or reindex
-   verification is still pending.
+4. `implemented` - implementation repo PR merged, but live deployment or
+   forward-index verification is still pending.
 5. `deployed` - public API/explorer verified against the request evidence.
 6. `blocked` - request needs more evidence, a chain tx, fixture, or design
    decision.
 
 The implementation repo work can include decoder logic, persistence/projection
 changes, API fields or routes, explorer display changes, fixtures, tests,
-deployment, reindexing, and live verification.
+deployment, and forward-index verification.
 
 This request repo should keep the public status updated with:
 
 - the assigned implementation owner,
 - the implementation PR link,
-- deployment or reindex status,
+- deployment and forward-index status,
 - verified public API/explorer links.
 
 ## Acceptance vs Deployment
