@@ -40,6 +40,8 @@ explorer_goal:
     - name: ""
       description: ""
       example: ""
+  success_criteria:
+    - ""
 
 chain_evidence:
   # Include at least one accepted txid or reproducible fixture.
@@ -58,16 +60,32 @@ chain_evidence:
       role: ""
   covenant_ids:
     - ""
+  current_behavior:
+    api_url: ""
+    explorer_url: ""
+    observed_status: ""
 
 decode_contract:
   # Describe how maintainers should recognize and classify this flow.
   p2sh_reveal_shape: ""
   template_or_protocol_marker: ""
+  compiled_artifact_url: ""
+  payload_schema:
+    description: ""
+    required_fields:
+      - ""
   actions:
     - name: ""
       trigger: ""
       expected_indexer_action: ""
-      expected_decoded_args: {}
+      expected_template_name: ""
+      expected_decoded_args:
+        example_field: ""
+      expected_api_response:
+        route: ""
+        fields:
+          - name: ""
+            example: ""
   state_transitions:
     - from: ""
       to: ""
@@ -83,6 +101,10 @@ fixtures:
   external_links: []
   reproduction_steps:
     - ""
+  expected_test_cases:
+    - name: ""
+      given: ""
+      expect: ""
 
 compatibility:
   related_standards:
