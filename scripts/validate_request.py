@@ -24,7 +24,7 @@ VALID_STATUSES = {
     "blocked",
 }
 
-VALID_NETWORKS = {"mainnet", "tn10", "tn11", "tn12"}
+VALID_NETWORKS = {"mainnet", "tn10", "tn11"}
 VALID_REQUEST_KINDS = {
     "new_decoder",
     "decoder_update",

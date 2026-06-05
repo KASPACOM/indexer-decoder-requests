@@ -31,7 +31,8 @@ explorer_goal:
     - address_activity
   needed_api_routes:
     - /tx/{txid}
-    - /covenants/{covenant_id_or_script_hash}
+    - /covenants/by-id/{covenant_id}
+    - /addresses/{covenant_address}/covenants
   display_fields:
     - name: itemId
       description: "Application item identifier."
@@ -65,7 +66,7 @@ chain_evidence:
   covenant_ids:
     - "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   current_behavior:
-    api_url: "https://dev-tn10-indexer.kaspa.com/tx/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    api_url: "https://tn10-indexer.kaspa.com/tx/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
     explorer_url: "https://tn10-covenants.kaspa.com/tx/0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
     observed_status: "unknown"
 
