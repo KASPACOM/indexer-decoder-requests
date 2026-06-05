@@ -105,6 +105,9 @@ Rules:
   unpublished private user data.
 - Use stable arg names. Do not rename `owner` to `wallet` in one tx and
   `user` in another.
+- Keep `args` as a JSON array of `{ "name", "type", "value" }` objects. Do
+  not send an object map such as `{ "owner": "kaspatest:q..." }`; use an empty
+  array when there are no public args.
 - Use decimal strings for large integers such as sompi amounts, token amounts,
   blue scores, and millisecond timestamps.
 - Include identifiers your app will search by, such as `owner`, `seller`,
@@ -116,6 +119,11 @@ Rules:
 The indexer stores these as wallet-declared `claimedArgs`. They are useful for
 early display and debugging. They are not final truth until a decoder can match
 the revealed script and decoded constructor/state.
+
+Route filters that read payload claims, such as `claimArg`, `wallet`, and
+`walletArg`, only inspect the top-level `args[]` entries. If your app needs to
+search nested state, current owner state after spends, or aggregated orderbook
+state, request a projection route instead of overloading deploy payloads.
 
 ## Lookup Routes
 

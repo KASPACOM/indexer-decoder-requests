@@ -73,7 +73,8 @@ decode_contract:
   payload_schema:
     # Describe the public tx.payload envelope your app writes on deploy or
     # continuation txs. Prefer the tn10/v/tmpl/args/meta shape from
-    # docs/covenant-indexer-best-practices.md.
+    # docs/covenant-indexer-best-practices.md. Keep args as an array of
+    # {name,type,value} objects, not an object map.
     description: ""
     required_fields:
       - ""
