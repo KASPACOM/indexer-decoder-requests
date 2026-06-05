@@ -134,6 +134,15 @@ curl -fsS \
 curl -fsS \
   'https://tn10-indexer.kaspa.com/covenants?claimArg=assetId&claimArgValue=sword-0001' | jq
 
+# Generic "my app covenants" lookup by owner-like wallet arg. This composes
+# with template, q, active, sort, limit, and offset.
+curl -fsS \
+  'https://tn10-indexer.kaspa.com/covenants?wallet=kaspatest:q...&template=ExampleVaultV1&sort=recent&limit=50' | jq
+
+# Narrow the wallet search to one explicit public arg name.
+curl -fsS \
+  'https://tn10-indexer.kaspa.com/covenants?wallet=kaspatest:q...&walletArg=stateOwner&template=KCC20V2' | jq
+
 # Search by text across covenant ID, script hash, genesis txid, address,
 # template, classification, and claim source.
 curl -fsS \
@@ -152,9 +161,17 @@ Address lookup nuance:
 
 - `GET /addresses/{address}/covenants` is for the indexed covenant address.
 - It is not a generic "all covenants owned by this wallet" route.
-- If your app needs wallet-owner lookup, put the owner wallet/pubkey in payload
-  args and decoded constructor/state args, then request the API projection you
-  need in this repo.
+- For generic wallet-owner lookup, use `GET /covenants?wallet=<address-or-pubkey>`.
+  It matches the covenant address, common owner-like `claimedArgs`, and decoded
+  top-level constructor args.
+- Add `walletArg=<argName>` when your app knows the exact public arg to match,
+  such as `owner`, `seller`, `buyer`, `deployerAddress`, `ownerIdentifier`, or
+  `stateOwner`.
+- `wallet` combines with `template`, `q`, `active`, `sort`, `limit`, and
+  `offset`, so app UIs can build pages like "my active vaults, newest first."
+- If your app needs current owner state, historical owner state, nested fields,
+  or domain-specific aggregation, request the API projection you need in this
+  repo.
 - KCC20-specific owner reads already exist under routes such as
   `/addresses/{owner}/kcc20/balances`, `/addresses/{owner}/kcc20/orders`, and
   `/addresses/{owner}/kcc20/trades`.
@@ -229,4 +246,3 @@ decode_contract:
           - name: decodedArgs.assetId
             example: sword-0001
 ```
-
