@@ -26,6 +26,12 @@ user data, or anything that cannot be public.
 See [`examples/complete-request.yml`](examples/complete-request.yml) for the
 level of detail maintainers and coding agents need.
 
+If you are designing a new covenant app, read
+[`docs/covenant-indexer-best-practices.md`](docs/covenant-indexer-best-practices.md)
+before deploying. It covers canonical `covenantId` usage, deploy payload args,
+wallet/address lookup limits, and the TN10 API routes that produce the best
+explorer UX.
+
 ## Implementation-Ready Requests
 
 A request is ready to assign to a coding agent when it includes:
@@ -106,4 +112,17 @@ Examples:
 requests/kaspa-game-items.yml
 requests/example-marketplace-orders.yml
 requests/custom-vault-v2.yml
+```
+
+## Public TN10 Routes
+
+Use these routes when preparing request evidence:
+
+```text
+https://tn10-indexer.kaspa.com/swagger-ui/
+https://tn10-indexer.kaspa.com/openapi.json
+https://tn10-indexer.kaspa.com/covenants
+https://tn10-indexer.kaspa.com/covenants/by-id/{covenant_id}
+https://tn10-indexer.kaspa.com/addresses/{covenant_address}/covenants
+https://tn10-indexer.kaspa.com/tx/{txid}/settlement-status
 ```

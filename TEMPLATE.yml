@@ -12,7 +12,6 @@ request:
   status: proposed
   target_networks:
     - tn10
-    - tn12
   request_type:
     # Pick one: new_decoder, decoder_update, explorer_display, api_projection
     kind: new_decoder
@@ -35,7 +34,8 @@ explorer_goal:
     - address_activity
   needed_api_routes:
     - /tx/{txid}
-    - /covenants/{covenant_id_or_script_hash}
+    - /covenants/by-id/{covenant_id}
+    - /addresses/{covenant_address}/covenants
   display_fields:
     - name: ""
       description: ""
@@ -71,6 +71,9 @@ decode_contract:
   template_or_protocol_marker: ""
   compiled_artifact_url: ""
   payload_schema:
+    # Describe the public tx.payload envelope your app writes on deploy or
+    # continuation txs. Prefer the tn10/v/tmpl/args/meta shape from
+    # docs/covenant-indexer-best-practices.md.
     description: ""
     required_fields:
       - ""
