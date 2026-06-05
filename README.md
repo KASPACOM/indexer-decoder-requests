@@ -123,6 +123,8 @@ https://tn10-indexer.kaspa.com/swagger-ui/
 https://tn10-indexer.kaspa.com/openapi.json
 https://tn10-indexer.kaspa.com/covenants
 https://tn10-indexer.kaspa.com/covenants/by-id/{covenant_id}
+https://tn10-indexer.kaspa.com/covenants?wallet={address_or_pubkey}&template={template}
+https://tn10-indexer.kaspa.com/covenants?wallet={address_or_pubkey}&walletArg={arg_name}
 https://tn10-indexer.kaspa.com/addresses/{covenant_address}/covenants
 https://tn10-indexer.kaspa.com/tx/{txid}/settlement-status
 ```
