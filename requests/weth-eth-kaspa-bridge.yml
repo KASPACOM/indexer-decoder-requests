@@ -1,0 +1,249 @@
+request:
+  app_name: "wETH — trust-minimised ETH↔Kaspa ZK bridge"
+  slug: "weth-eth-kaspa-bridge"
+  requester:
+    name: "gordonmurray-coding"
+    github: "gordonmurray-coding"
+    contact: "https://github.com/gordonmurray-coding/eth-kaspa-bridge"
+  status: proposed
+  target_networks:
+    - mainnet
+    - tn10
+  request_type:
+    kind: new_decoder
+    priority: normal
+
+protocol:
+  family: "KCC20 (silverscript covenant)"
+  version: "kcc20.sil compiled at maxCovIns = maxCovOuts = 2"
+  description: >
+    wETH is ETH wrapped onto Kaspa by a trust-minimised ZK bridge. ETH is locked in an Ethereum
+    escrow; an SP1/Groth16 proof of that deposit is verified on-chain by a Kaspa covenant, which
+    then mints a KCC20 note. Supply is 1:1 with locked ETH by construction — the minter only emits
+    when a deposit proof co-spends, and burning requires the registry to absorb the note.
+    The held note is the PRISTINE canonical kcc20.sil skeleton (no custom token script), so
+    registering that one template makes this and every other canonical KCC20 token decodable.
+    The first mainnet mint settled 2026-08-09 and the note is live and unspent.
+  public_spec_url: "https://github.com/gordonmurray-coding/eth-kaspa-bridge/blob/main/KCC20-COMPAT.md"
+  source_repo_url: "https://github.com/gordonmurray-coding/eth-kaspa-bridge"
+  license: "MIT"
+
+explorer_goal:
+  summary: >
+    Classify the canonical KCC20 held-note skeleton so wETH notes show as a token balance with an
+    owner and amount, instead of classificationKind=unknown / classificationStatus=unmatched.
+  user_story: >
+    A user bridges ETH to Kaspa and opens KasWare. Today the wETH note is invisible: it lives at a
+    P2SH covenant address with ownership encoded inside the script, and no wallet derives that. The
+    user has to be told "your funds are fine, check the relayer's /notes endpoint", which is not an
+    acceptable answer for a bridge. With the canonical KCC20 template registered, the note appears
+    as a balance under the address that owns it.
+  needed_views:
+    - covenant_detail
+    - transaction_detail
+    - address_activity
+  needed_api_routes:
+    - /covenants/by-id/{covenant_id}
+    - /tx/{txid}/settlement-status
+    - /covenants?template=KCC20&verified_only=true
+    - /addresses/{covenant_address}/covenants
+  display_fields:
+    - name: "owner"
+      description: "ownerIdentifier from the KCC20 state header (32 bytes) plus identifierType"
+      example: "kaspa:qrv56qnz2eya80zzs9v0k2jzuw6nwqlrlgv7vlrfjmnflauukc0hzffhan3rm (idType 0x00 PUBKEY)"
+    - name: "amount"
+      description: "token amount from the KCC20 state header, 8-byte LE; wETH uses 18 decimals"
+      example: "20000000000000000 (0.02 wETH)"
+    - name: "token"
+      description: "canonical token id / covenant id of the token covenant"
+      example: "88437964648fed0b1e1f78b2c912ddfa11029322d5f673318765fd7f1565284a"
+  success_criteria:
+    - "GET /covenants/by-id/88437964648fed0b1e1f78b2c912ddfa11029322d5f673318765fd7f1565284a returns 200 with classificationKind=KCC20 (currently 404 'no covenant')"
+    - "GET /tx/cc345e1a522cdf3eba9864de437f3366068bf7d6f55f14b2ad6e6593b37ba306/settlement-status reports the note output as a matched KCC20 action rather than classificationStatus=unmatched"
+    - "GET /covenants?template=KCC20&verified_only=true returns a non-empty list (currently [])"
+    - "The note at cc345e1a…:1 reports owner kaspa:qrv56qnz… and amount 20000000000000000"
+
+chain_evidence:
+  txids:
+    - network: mainnet
+      txid: "cc345e1a522cdf3eba9864de437f3366068bf7d6f55f14b2ad6e6593b37ba306"
+      expected_action: "mint — reveals the minter redeem and creates the KCC20 held note at vout 1"
+      explorer_url: "https://explorer.kaspa.org/txs/cc345e1a522cdf3eba9864de437f3366068bf7d6f55f14b2ad6e6593b37ba306"
+    - network: mainnet
+      txid: "05744a47239c2f0373c9d7e6272bbdcdf6b1bbe6ff0a9690f90693840e611f2e"
+      expected_action: "canonical KCC20 transfer that revealed the redeem of the earlier wETH deployment (covid 383080a7…), included as a second independent reveal of the same skeleton"
+      explorer_url: "https://explorer.kaspa.org/txs/05744a47239c2f0373c9d7e6272bbdcdf6b1bbe6ff0a9690f90693840e611f2e"
+  addresses:
+    - network: mainnet
+      address: "kaspa:qrv56qnz2eya80zzs9v0k2jzuw6nwqlrlgv7vlrfjmnflauukc0hzffhan3rm"
+      role: "owner of the live wETH note (recipient of the first mainnet bridge mint)"
+  outpoints:
+    - txid: "cc345e1a522cdf3eba9864de437f3366068bf7d6f55f14b2ad6e6593b37ba306"
+      vout: 1
+      role: "the live KCC20 wETH held note — 0.02 wETH, unspent"
+    - txid: "cc345e1a522cdf3eba9864de437f3366068bf7d6f55f14b2ad6e6593b37ba306"
+      vout: 2
+      role: "minter covenant continuation"
+    - txid: "cc345e1a522cdf3eba9864de437f3366068bf7d6f55f14b2ad6e6593b37ba306"
+      vout: 0
+      role: "mint-authority note continuation"
+  covenant_ids:
+    - "88437964648fed0b1e1f78b2c912ddfa11029322d5f673318765fd7f1565284a"
+    - "077d17aaee611ffdcf6dccd19057252cf4d6f862732b1512fe3d1c400d6b7cb1"
+    - "2ac9e8885f6955a3c18fb5b7c416fe9c9de64fc53755b2d0dbcbd312adf5684a"
+  current_behavior:
+    api_url: "https://indexer.kaspa.com/covenants/by-id/88437964648fed0b1e1f78b2c912ddfa11029322d5f673318765fd7f1565284a"
+    explorer_url: "https://indexer.kaspa.com/tx/cc345e1a522cdf3eba9864de437f3366068bf7d6f55f14b2ad6e6593b37ba306/settlement-status"
+    observed_status: >
+      Measured 2026-08-09 against indexer.kaspa.com (mainnet).
+      /covenants/by-id/{covid} returns 404 "no covenant <covid>" for the token, minter and registry.
+      /covenants?template=KCC20 and /kcc20/markets both return [].
+      IMPORTANTLY the indexer already ingests these transactions correctly:
+      /tx/cc345e1a…/settlement-status returns 200 with actionCount 7 and correctly typed actions
+      (3x spend, 2x continuation, 2x deploy) — every one carrying classificationKind=unknown with
+      classificationStatus=unmatched (spend/continuation) or unrevealed (deploy), and template=null.
+      So this is purely a missing template registration, not an ingestion gap.
+      The superseded deployment covid 383080a7… behaves identically, which rules out anything
+      specific to the current deployment.
+
+decode_contract:
+  p2sh_reveal_shape: >
+    P2SH(prefix || encoded_state || suffix) where encoded_state begins with the canonical KCC20
+    header { ownerIdentifier: byte[32], identifierType: byte, amount: int }. identifierType is
+    0x00 PUBKEY for every note this bridge currently creates. Recognition is a structural
+    opcode-skeleton match of the revealed redeem: opcodes and push LENGTHS align, push VALUES are
+    the state slots.
+  template_or_protocol_marker: >
+    Pristine canonical kcc20.sil compiled at maxCovIns = maxCovOuts = 2 — the "variant a"
+    skeleton, 1568-byte redeem. This is NOT a bridge-specific script: it is the unmodified
+    canonical KCC20 example. The (4,4) compilation is a different skeleton and must not be
+    conflated with it. We verified exact opcode-skeleton equality against the reference fixture.
+  compiled_artifact_url: "https://github.com/gordonmurray-coding/eth-kaspa-bridge/blob/main/covenant/kcc20.sil"
+  payload_schema:
+    description: >
+      NOT YET IMPLEMENTED, and we would like guidance. Per docs/covenant-indexer-best-practices.md
+      a deploy tx should carry a public tx.payload claim. Our genesis transactions currently write
+      an EMPTY payload (verified: the mint tx cc345e1a… has payload length 0), because these
+      covenants were deployed before we read this guidance. We are willing to emit the
+      {v, tmpl, args, meta} envelope on the next cascade if it materially helps classification.
+      Note it should not be REQUIRED here: the held-note skeleton is fully revealed on chain, so
+      the decoder has everything it needs from the reveal itself. Payload claims are described in
+      the guidance as early hints rather than product truth.
+    required_fields:
+      - "(none currently emitted — see description)"
+  actions:
+    - name: "kcc20_mint"
+      trigger: >
+        The minter covenant is spent together with a proof of an Ethereum deposit; net emission
+        equals the proven deposit amount. Output 1 is a new canonical KCC20 held note.
+      expected_indexer_action: "deploy/continuation classified as KCC20 with a matched template"
+      expected_template_name: "KCC20"
+      expected_decoded_args:
+        owner: "d94d02625649d3bc428158fb2a42e3b53703e3fa19e67c6996e69ff79cb61f71"
+        identifierType: "0x00"
+        amount: "20000000000000000"
+      expected_api_response:
+        route: "/covenants/by-id/88437964648fed0b1e1f78b2c912ddfa11029322d5f673318765fd7f1565284a"
+        fields:
+          - name: "classificationKind"
+            example: "KCC20"
+          - name: "classificationStatus"
+            example: "matched"
+    - name: "kcc20_transfer"
+      trigger: >
+        Canonical KCC20 transfer. Sig-script args [newStates, sigs, witnesses] with prevStates
+        injected by the framework; witnesses=[0] for a PUBKEY owner. Conserves amount
+        (totalIn == totalOut) — the held note is isMinter=false and cannot inflate supply.
+      expected_indexer_action: "spend + continuation classified as KCC20 transfer"
+      expected_template_name: "KCC20"
+      expected_decoded_args:
+        newOwner: "32-byte ownerIdentifier from the new state"
+        amount: "unchanged from the previous state"
+      expected_api_response:
+        route: "/tx/{txid}/settlement-status"
+        fields:
+          - name: "classificationStatus"
+            example: "matched"
+  state_transitions:
+    - from: "minter covenant + Ethereum deposit proof"
+      to: "new KCC20 held note (isMinter=false) + minter continuation"
+      trigger: "kcc20_mint — net emission equals the proven ETH deposit"
+    - from: "KCC20 held note (owner A)"
+      to: "KCC20 held note (owner B), amount conserved"
+      trigger: "kcc20_transfer"
+    - from: "KCC20 held note + registry"
+      to: "note absorbed, supply reduced"
+      trigger: "burn — unlocks the corresponding ETH on Ethereum"
+  balances_or_positions:
+    description: >
+      Balance is read directly from the KCC20 state header of each held note; a wallet's balance is
+      the sum of notes whose ownerIdentifier matches. wETH uses 18 decimals to mirror ETH, so the
+      header amount is in wei.
+    owner_identifier: "ownerIdentifier (byte[32]) + identifierType (byte, 0x00 PUBKEY)"
+    amount_field: "amount (int, 8-byte LE in the encoded state)"
+
+fixtures:
+  included_in_pr: []
+  external_links:
+    - "https://github.com/gordonmurray-coding/eth-kaspa-bridge/blob/main/covenant/kcc20.sil"
+    - "https://github.com/gordonmurray-coding/eth-kaspa-bridge/blob/main/covenant/weth.kcc20.json"
+    - "https://github.com/gordonmurray-coding/eth-kaspa-bridge/blob/main/KCC20-COMPAT.md"
+  reproduction_steps:
+    - "curl -s https://indexer.kaspa.com/covenants/by-id/88437964648fed0b1e1f78b2c912ddfa11029322d5f673318765fd7f1565284a  # today: 404 'no covenant'"
+    - "curl -s https://indexer.kaspa.com/tx/cc345e1a522cdf3eba9864de437f3366068bf7d6f55f14b2ad6e6593b37ba306/settlement-status  # today: 7 actions, all classificationKind=unknown"
+    - "curl -s 'https://indexer.kaspa.com/covenants?template=KCC20&limit=5'  # today: []"
+    - "Fetch the raw tx from api.kaspa.org and inspect the revealed redeem of input 1 (the minter) and output 1 (the held note); the note's redeem is the unmodified kcc20.sil (2,2) skeleton."
+    - "Compile the reference yourself: silverscript kcc20.sil with MAX_CIN=2 MAX_COUT=2 gives the 1568-byte redeem whose opcode skeleton must match."
+  expected_test_cases:
+    - name: "canonical KCC20 held note is matched"
+      given: "the note outpoint cc345e1a522cdf3eba9864de437f3366068bf7d6f55f14b2ad6e6593b37ba306:1"
+      expect: "classificationKind=KCC20, classificationStatus=matched, owner kaspa:qrv56qnz…, amount 20000000000000000"
+    - name: "token covenant resolves by canonical id"
+      given: "GET /covenants/by-id/88437964648fed0b1e1f78b2c912ddfa11029322d5f673318765fd7f1565284a"
+      expect: "200 with a KCC20 classification instead of 404 'no covenant'"
+    - name: "(4,4) skeleton is not mistaken for (2,2)"
+      given: "a kcc20.sil covenant compiled at maxCovIns = maxCovOuts = 4"
+      expect: "does NOT match the (2,2) template; the two skeletons are distinct and must stay distinct"
+    - name: "supply cannot inflate via the held note"
+      given: "a kcc20_transfer spending the held note"
+      expect: "decoded amount is conserved (isMinter=false); only a minter co-spend changes supply"
+
+compatibility:
+  related_standards:
+    - "KCC20 fungible token covenant (canonical kcc20.sil / kcc20-minter.sil)"
+    - "KRC-20 (inscription-based) — unrelated encoding, listed to avoid conflation"
+  conflicts_or_overlap:
+    - >
+      No overlap with the 13 inscription-based templates (KRC-20 / KRC-721 / KNS) currently in the
+      registry: this is a script-covenant reveal, not an OP_FALSE OP_IF inscription envelope.
+    - >
+      The (2,2) and (4,4) compilations of kcc20.sil are DIFFERENT skeletons. Registering one does
+      not classify the other. We use (2,2) for held notes.
+    - >
+      wETH deviates from vanilla KCC20 in supply RULES only, not in the held-note shape: mint
+      requires a bridge mint-authority co-spend with net emission equal to the proven ETH deposit,
+      and burn requires registry absorption. Balance reads are unaffected — a decoder reads the
+      header exactly as for any canonical KCC20 note.
+  backwards_compatibility_notes: >
+    Registering the canonical (2,2) skeleton benefits every canonical KCC20 token, not just wETH.
+    kascov.io already recognises this exact skeleton on both mainnet and tn10 (status verified,
+    template "KCC20 token"), so there is an independent implementation to cross-check against.
+
+maintainer_notes:
+  open_questions:
+    - >
+      Do you want the tx.payload {v, tmpl, args, meta} claim on deploy for this to be actionable?
+      Our current covenants emit an empty payload. We can add it on the next deployment cascade,
+      but we would rather not cascade purely for a hint field if the reveal is sufficient.
+    - >
+      Should the canonical KCC20 template be registered generically (any kcc20.sil (2,2) covenant),
+      or per-token with wETH registered as a specific instance? We would prefer generic, since it
+      fixes the whole class.
+    - >
+      Is there a public way to see which templates are registered? We inferred the current set
+      from behaviour rather than from an endpoint, and would rather verify than infer.
+  requested_timeline: "No deadline. wETH is live on mainnet and usable via the bridge's own /notes endpoint; wallet display is the gap."
+  implementation_owner: ""
+  implementation_pr: ""
+  deployment_status_url: ""
+  verified_live_links: []
